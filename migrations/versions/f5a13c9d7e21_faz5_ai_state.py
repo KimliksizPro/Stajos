@@ -60,16 +60,17 @@ def downgrade():
         if processing_rows:
             raise RuntimeError("PROCESSING rows must be resolved before downgrade")
 
-        op.execute("ALTER TYPE ai_status RENAME TO ai_status_with_processing")
-        op.execute(
-            "CREATE TYPE ai_status AS ENUM "
-            "('PENDING', 'REFINED', 'ACCEPTED', 'REJECTED', 'ERROR')"
-        )
-        op.execute(
-            "ALTER TABLE daily_logs ALTER COLUMN ai_status TYPE ai_status "
-            "USING ai_status::text::ai_status"
-        )
-        op.execute("DROP TYPE ai_status_with_processing")
+        with bind.begin():
+            op.execute("ALTER TYPE ai_status RENAME TO ai_status_with_processing")
+            op.execute(
+                "CREATE TYPE ai_status AS ENUM "
+                "('PENDING', 'REFINED', 'ACCEPTED', 'REJECTED', 'ERROR')"
+            )
+            op.execute(
+                "ALTER TABLE daily_logs ALTER COLUMN ai_status TYPE ai_status "
+                "USING ai_status::text::ai_status"
+            )
+            op.execute("DROP TYPE ai_status_with_processing")
 
     with op.batch_alter_table("daily_logs", schema=None) as batch_op:
         if bind.dialect.name == "sqlite":

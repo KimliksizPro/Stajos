@@ -74,9 +74,15 @@ class DailyLog(db.Model):
             "title": self.title,
             "raw_content": self.raw_content,
             "ai_refined_content": self.ai_refined_content,
-            "ai_suggested_technologies": self.ai_suggested_technologies or [],
-            "ai_suggested_topics": self.ai_suggested_topics or [],
-            "ai_suggested_tags": self.ai_suggested_tags or [],
+            "ai_suggested_technologies": self.ai_suggested_technologies
+            if self.ai_suggested_technologies is not None
+            else [],
+            "ai_suggested_topics": self.ai_suggested_topics
+            if self.ai_suggested_topics is not None
+            else [],
+            "ai_suggested_tags": self.ai_suggested_tags
+            if self.ai_suggested_tags is not None
+            else [],
             "ai_status": self.ai_status.value
             if isinstance(self.ai_status, AIStatus)
             else str(self.ai_status),

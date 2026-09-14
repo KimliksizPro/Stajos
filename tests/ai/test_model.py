@@ -58,3 +58,22 @@ def test_daily_log_serializes_suggestion_values_unchanged():
     assert serialized["ai_suggested_technologies"] == [{"name": "Flask"}]
     assert serialized["ai_suggested_topics"] == [{"name": "Migrations"}]
     assert serialized["ai_suggested_tags"] == ["backend", "database"]
+
+
+def test_daily_log_preserves_falsey_non_null_suggestion_values():
+    log = DailyLog(
+        internship_id="internship-id",
+        date=date(2026, 9, 14),
+        day_number=1,
+        title="AI persistence",
+        raw_content="Implement persisted state.",
+        ai_suggested_technologies={},
+        ai_suggested_topics=False,
+        ai_suggested_tags="",
+    )
+
+    serialized = log.to_dict()
+
+    assert serialized["ai_suggested_technologies"] == {}
+    assert serialized["ai_suggested_topics"] is False
+    assert serialized["ai_suggested_tags"] == ""
