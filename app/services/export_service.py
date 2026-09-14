@@ -1,18 +1,22 @@
 # app/services/export_service.py
 """ExportService - read-only export fetch (Faz 6)."""
-from sqlalchemy.orm import selectinload
 from app.core.exceptions import BadRequestError, NotFoundError
-from app.extensions import db
 from app.models.daily_log import DailyLog
 from app.models.internship import Internship
 
-__all__ = ["ExportService"]
+__all__ = ["ExportService", "EXPORT_MAX_ROWS"]
 
-_MAX_EXPORT_ROWS = 1000
+EXPORT_MAX_ROWS = 1000
 
 class ExportService:
     @staticmethod
-    def get_export_dicts(user_id: str, internship_id: str | None = None) -> list[dict]:
+    def get_export_dicts(user_id: str, internship_id: str | None = None) -> tuple[list[dict], bool]:
+        """Fetch owned logs as dicts with truncation flag.
+
+        Returns:
+            (rows, truncated): rows en fazla EXPORT_MAX_ROWS satir icerir;
+            truncated True ise cikti limit nedeniyle kirpilmistir.
+        """
         if not user_id:
             raise BadRequestError("user_id zorunludur")
         q = Internship.query.filter_by(user_id=user_id)
@@ -24,14 +28,14 @@ class ExportService:
         else:
             ids = [i.id for i in q.all()]
             if not ids:
-                return []
-        query = (
+                return [], False
+        # limit+1 cekilerek kirpma tespiti yapilir (ekstra count sorgusu yok).
+        fetched = (
             DailyLog.query.filter(DailyLog.internship_id.in_(ids))
-            .order_by(DailyLog.date.asc())
-            .limit(_MAX_EXPORT_ROWS)
+            .order_by(DailyLog.date.asc(), DailyLog.id.asc())
+            .limit(EXPORT_MAX_ROWS + 1)
+            .all()
         )
-        try:
-            query = query.options(selectinload(DailyLog.technologies), selectinload(DailyLog.tags))
-        except Exception:
-            pass
-        return [l.to_dict() for l in query.all()]
+        truncated = len(fetched) > EXPORT_MAX_ROWS
+        rows = [l.to_dict() for l in fetched[:EXPORT_MAX_ROWS]]
+        return rows, truncated

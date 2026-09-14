@@ -36,3 +36,29 @@ def test_export_requires_auth(client):
     r = client.get("/api/v1/export/json")
     assert r.status_code == 401
     assert r.json["success"] is False
+
+def test_export_json_meta_reports_limit(app, client):
+    tok, iid = _setup(app)
+    r = client.get(f"/api/v1/export/json?internship_id={iid}", headers={"Authorization": f"Bearer {tok}"})
+    assert r.status_code == 200
+    assert r.json["meta"] == {"total": 1, "limit": 1000, "truncated": False}
+
+def test_export_json_foreign_internship_404(app, client):
+    tok_a, iid_a = _setup(app)
+    with app.app_context():
+        u2 = User(email="other@t.com", password_hash="x", full_name="O")
+        db.session.add(u2); db.session.commit()
+        ins2 = Internship(user_id=u2.id, company_name="C2", start_date=date(2024, 1, 1), end_date=date(2024, 6, 1), total_expected_days=10)
+        db.session.add(ins2); db.session.commit()
+        tok_b = create_access_token(identity=u2.id)
+    r = client.get(f"/api/v1/export/json?internship_id={iid_a}", headers={"Authorization": f"Bearer {tok_b}"})
+    assert r.status_code == 404
+    assert r.json["success"] is False
+
+def test_export_json_without_filter_returns_all(app, client):
+    tok, iid = _setup(app)
+    r = client.get("/api/v1/export/json", headers={"Authorization": f"Bearer {tok}"})
+    assert r.status_code == 200
+    assert r.json["success"] is True
+    assert len(r.json["data"]) == 1
+    assert r.json["meta"]["truncated"] is False

@@ -20,8 +20,9 @@ def test_get_export_dicts_returns_owned_logs(app):
     uid, iid = _mk(app)
     with app.app_context():
         LogService.create_log(uid, iid, "T1", "hello world", date_override="2024-01-02")
-        rows = ExportService.get_export_dicts(uid, iid)
+        rows, truncated = ExportService.get_export_dicts(uid, iid)
         assert len(rows) == 1
+        assert truncated is False
         assert rows[0]["raw_content"] == "hello world"
         assert rows[0]["internship_id"] == iid
 
@@ -31,3 +32,13 @@ def test_get_export_dicts_foreign_internship_404(app):
     with app.app_context():
         with pytest.raises(NotFoundError):
             ExportService.get_export_dicts(uid2, iid)
+
+def test_get_export_dicts_empty_without_internship(app):
+    uid2, _ = _mk(app, email="empty@t.com")
+    with app.app_context():
+        from app.models.internship import Internship as _Ins
+        _Ins.query.filter_by(user_id=uid2).delete()
+        db.session.commit()
+        rows, truncated = ExportService.get_export_dicts(uid2)
+        assert rows == []
+        assert truncated is False
