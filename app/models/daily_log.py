@@ -11,6 +11,7 @@ class AIStatus(enum.Enum):
     """AI processing status for daily logs (architecture.md:77)."""
 
     PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
     REFINED = "REFINED"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
@@ -37,6 +38,10 @@ class DailyLog(db.Model):
     title = db.Column(db.String(255), nullable=False)
     raw_content = db.Column(db.Text, nullable=False)
     ai_refined_content = db.Column(db.Text, nullable=True)
+    ai_suggested_technologies = db.Column(db.JSON, nullable=True)
+    ai_suggested_topics = db.Column(db.JSON, nullable=True)
+    ai_suggested_tags = db.Column(db.JSON, nullable=True)
+    ai_processing_started_at = db.Column(db.DateTime(timezone=True), nullable=True)
     ai_status = db.Column(
         db.Enum(AIStatus, name="ai_status"),
         nullable=False,
@@ -69,6 +74,9 @@ class DailyLog(db.Model):
             "title": self.title,
             "raw_content": self.raw_content,
             "ai_refined_content": self.ai_refined_content,
+            "ai_suggested_technologies": self.ai_suggested_technologies or [],
+            "ai_suggested_topics": self.ai_suggested_topics or [],
+            "ai_suggested_tags": self.ai_suggested_tags or [],
             "ai_status": self.ai_status.value
             if isinstance(self.ai_status, AIStatus)
             else str(self.ai_status),
