@@ -1,5 +1,8 @@
+import importlib
+
 import pytest
 
+import config
 from config import BaseConfig, TestingConfig
 
 
@@ -44,6 +47,44 @@ def test_validate_ai_rejects_missing_required_setting(setting):
 
     with pytest.raises(ValueError, match=setting):
         EnabledConfig.validate_ai()
+
+
+@pytest.mark.parametrize(
+    "setting",
+    [
+        "AI_TIMEOUT_SECONDS",
+        "AI_MAX_WORKERS",
+        "AI_RECOVERY_BATCH_SIZE",
+        "AI_STALE_AFTER_SECONDS",
+    ],
+)
+def test_invalid_numeric_env_raises_helpful_error(monkeypatch, setting):
+    monkeypatch.setenv(setting, "not-an-int")
+    try:
+        with pytest.raises(ValueError, match=setting):
+            importlib.reload(config)
+    finally:
+        monkeypatch.undo()
+        importlib.reload(config)
+
+
+@pytest.mark.parametrize(
+    "setting",
+    [
+        "AI_TIMEOUT_SECONDS",
+        "AI_MAX_WORKERS",
+        "AI_RECOVERY_BATCH_SIZE",
+        "AI_STALE_AFTER_SECONDS",
+    ],
+)
+def test_invalid_numeric_env_message_mentions_integer_format(monkeypatch, setting):
+    monkeypatch.setenv(setting, "not-an-int")
+    try:
+        with pytest.raises(ValueError, match="integer"):
+            importlib.reload(config)
+    finally:
+        monkeypatch.undo()
+        importlib.reload(config)
 
 
 @pytest.mark.parametrize(

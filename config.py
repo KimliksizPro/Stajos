@@ -10,6 +10,16 @@ def _env_bool(name, default):
     return default if value is None else value.lower() in {"1", "true", "yes", "on"}
 
 
+def _env_int(name, default):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError as e:
+        raise ValueError(f"{name} must be an integer, got {raw!r}") from e
+
+
 class BaseConfig:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -20,11 +30,11 @@ class BaseConfig:
     AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1")
     AI_API_KEY = os.getenv("AI_API_KEY", "")
     AI_MODEL = os.getenv("AI_MODEL", "gpt-4o-mini")
-    AI_TIMEOUT_SECONDS = int(os.getenv("AI_TIMEOUT_SECONDS", "30"))
-    AI_MAX_WORKERS = int(os.getenv("AI_MAX_WORKERS", "2"))
+    AI_TIMEOUT_SECONDS = _env_int("AI_TIMEOUT_SECONDS", 30)
+    AI_MAX_WORKERS = _env_int("AI_MAX_WORKERS", 2)
     AI_RECOVERY_ENABLED = _env_bool("AI_RECOVERY_ENABLED", True)
-    AI_RECOVERY_BATCH_SIZE = int(os.getenv("AI_RECOVERY_BATCH_SIZE", "100"))
-    AI_STALE_AFTER_SECONDS = int(os.getenv("AI_STALE_AFTER_SECONDS", "300"))
+    AI_RECOVERY_BATCH_SIZE = _env_int("AI_RECOVERY_BATCH_SIZE", 100)
+    AI_STALE_AFTER_SECONDS = _env_int("AI_STALE_AFTER_SECONDS", 300)
 
     @classmethod
     def validate_ai(cls):

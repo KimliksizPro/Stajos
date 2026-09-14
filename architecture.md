@@ -315,7 +315,7 @@ def get_today_log(user_id: str) -> dict:
 2.  OpenAI/LLM implementasyonu.
 3.  `threading.Thread` ile asenkron AI çağrısı.
 4.  Accept/Reject AI mekanizması.
-5.  Kanit (2026-09-14): `tests/ai` 120 passed, tam suite 139 passed; migration head `f5a13c9d7e21`; commit araligi `5e50db1..3f77e89` (HEAD `3f77e89`); disposable SQLite DB'de `upgrade/current/check` PASS, cleanup tamamlandi.
+5.  Kanit (2026-09-14): `tests/ai` 120 passed, tam suite 139 passed; migration head `f5a13c9d7e21`; commit araligi `5e50db1..afeaa19` (HEAD `afeaa19`; son kod `3f77e89`, docs commit kod degistirmedi); disposable SQLite DB'de `upgrade/current/check` PASS, cleanup tamamlandi.
 6.  Kalan riskler: PostgreSQL runtime yok (kanit SQLite ile sinirli); restart-sirasinda-calisan-is kaybi recovery ile sinirli.
 
 ### Faz 6: Export ve Son Rötuşlar
