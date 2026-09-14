@@ -65,6 +65,7 @@ def create_app(config_name: str = None):
     from app.api.v1.learning_routes import learning_bp
     from app.api.v1.export_routes import export_bp
     from app.api.v1.timeline_routes import timeline_bp
+    from app.api.v1.docs_routes import docs_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(internship_bp)
@@ -72,6 +73,7 @@ def create_app(config_name: str = None):
     app.register_blueprint(learning_bp)
     app.register_blueprint(export_bp)
     app.register_blueprint(timeline_bp)
+    app.register_blueprint(docs_bp)
 
     # Health check
     @app.route("/api/v1/health", methods=["GET"], strict_slashes=False)
