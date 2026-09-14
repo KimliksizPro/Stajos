@@ -40,20 +40,6 @@ class _Bind:
         self.events.append(("query", str(statement)))
         return _Result(self.processing_row)
 
-    def begin(self):
-        bind = self
-
-        class Transaction:
-            def __enter__(self):
-                bind.events.append(("transaction", "begin"))
-
-            def __exit__(self, exc_type, exc_value, traceback):
-                bind.events.append(
-                    ("transaction", "rollback" if exc_type else "commit")
-                )
-
-        return Transaction()
-
 
 class _Batch:
     def __enter__(self):
@@ -159,7 +145,6 @@ def test_postgresql_downgrade_recreates_enum_atomically_in_order(monkeypatch):
             "query",
             "SELECT 1 FROM daily_logs WHERE ai_status = 'PROCESSING' LIMIT 1",
         ),
-        ("transaction", "begin"),
         ("ddl", "ALTER TYPE ai_status RENAME TO ai_status_with_processing"),
         (
             "ddl",
@@ -172,7 +157,6 @@ def test_postgresql_downgrade_recreates_enum_atomically_in_order(monkeypatch):
             "USING ai_status::text::ai_status",
         ),
         ("ddl", "DROP TYPE ai_status_with_processing"),
-        ("transaction", "commit"),
     ]
 
 
@@ -188,5 +172,42 @@ def test_postgresql_downgrade_rolls_back_enum_recreation_on_failure(monkeypatch)
     with pytest.raises(RuntimeError, match="simulated DDL failure"):
         migration.downgrade()
 
-    assert bind.events[-1] == ("transaction", "rollback")
     assert ("ddl", "DROP TYPE ai_status_with_processing") not in bind.events
+    assert bind.events == [
+        (
+            "query",
+            "SELECT 1 FROM daily_logs WHERE ai_status = 'PROCESSING' LIMIT 1",
+        ),
+        ("ddl", "ALTER TYPE ai_status RENAME TO ai_status_with_processing"),
+        (
+            "ddl",
+            "CREATE TYPE ai_status AS ENUM "
+            "('PENDING', 'REFINED', 'ACCEPTED', 'REJECTED', 'ERROR')",
+        ),
+        (
+            "ddl",
+            "ALTER TABLE daily_logs ALTER COLUMN ai_status TYPE ai_status "
+            "USING ai_status::text::ai_status",
+        ),
+    ]
+
+
+def test_postgresql_downgrade_relies_on_ambient_transaction():
+    source = _migration_source()
+    tree = ast.parse(source)
+    downgrade = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "downgrade"
+    )
+    downgrade_source = ast.get_source_segment(source, downgrade)
+    assert "bind.begin(" not in downgrade_source
+    guard_pos = downgrade_source.find(
+        "PROCESSING rows must be resolved before downgrade"
+    )
+    first_ddl_pos = downgrade_source.find(
+        "ALTER TYPE ai_status RENAME TO ai_status_with_processing"
+    )
+    assert guard_pos != -1
+    assert first_ddl_pos != -1
+    assert guard_pos < first_ddl_pos
