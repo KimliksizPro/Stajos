@@ -11,18 +11,16 @@
 - Tamamlanan Fix-2/3/4 tasarim ve planlari: `docs/archive/faz4/`.
 - Faz 5: AI entegrasyonu tamamlandi (2026-09-14): provider/parser/worker/recovery/submission/accept-reject + migration `f5a13c9d7e21` head.
 - Faz 5 kanit (2026-09-14): `tests/ai` 128 passed, tam suite 147 passed; disposable SQLite DB'de `upgrade/current/check` PASS; commit araligi `5e50db1..5e29bc3` (HEAD `5e29bc3`).
+- Faz 6: Export/docs/testler tamamlandi (2026-09-14): `ExportService` + `GET /api/v1/export/json|csv`, `GET /api/v1/openapi.json|docs`, `date_calculator` unit testleri; migration yok (read-only, model degisikligi yok).
+- Faz 6 kanit (2026-09-14): tam suite 164 passed (147 + 17 yeni); `compileall` exit 0; `git diff --check` clean; commit araligi `342ac6c..e9a4ba8` (HEAD `e9a4ba8`, review followup dahil 6 commit).
+- Faz 6 plani: `docs/superpowers/plans/2026-09-14-faz6-export-docs-tests.md`.
 
-## Siradaki: Faz 5 AI (tamamlandi 2026-09-14)
+## Siradaki: V2 MCP
 
-- `AIProviderInterface` ve provider implementasyonu.
-- AI cagrisi icin hafif background calisma modeli.
-- `PENDING -> REFINED -> ACCEPTED/REJECTED/ERROR` durum akisi.
-- Accept/reject endpointleri; hata halinde `ERROR`, her durumda `raw_content` degismezligi.
-- Prompt guardrails ve yapisal JSON parse/validation.
+- MCP server, tools ve resources implementasyonu.
 
 ## Sonraki
 
-- Faz 6: JSON/CSV export, Swagger/OpenAPI ve eksik unit testler.
 - V2: MCP server, tools ve resources implementasyonu.
 
 ## Bilincli Ertelenenler
