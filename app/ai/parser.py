@@ -50,5 +50,5 @@ def parse_ai_output(payload: str) -> AIResult:
             parsed_lists[field] = tuple(names)
 
         return AIResult(content, **parsed_lists)
-    except (json.JSONDecodeError, TypeError, ValueError) as exc:
-        raise AIOutputError("Invalid AI output") from exc
+    except (json.JSONDecodeError, TypeError, ValueError):
+        raise AIOutputError("Invalid AI output") from None

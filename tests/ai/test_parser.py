@@ -82,3 +82,13 @@ def test_accepts_documented_boundaries_and_empty_lists():
 def test_rejects_non_string_payload_with_sanitized_error():
     with pytest.raises(AIOutputError, match="^Invalid AI output$"):
         parse_ai_output(object())
+
+
+def test_rejects_malformed_payload_without_chaining_provider_content():
+    payload = '{"secret": "provider-token"'
+
+    with pytest.raises(AIOutputError) as exc_info:
+        parse_ai_output(payload)
+
+    assert str(exc_info.value) == "Invalid AI output"
+    assert exc_info.value.__cause__ is None
