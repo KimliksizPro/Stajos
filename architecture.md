@@ -1,7 +1,7 @@
 
 # StajOS — Sadeleştirilmiş Mimari ve Geliştirme Planı (Solo Edition)
 
-Bu doküman, tek kullanıcılı (personal use), Redis/Celery gibi ağır bağımlılıklardan arındırılmış, Flask tabanlı, API-first ve ajan (agent) destekli StajOS projesinin "tek kaynak" (single source of truth) dokümanıdır.
+Bu dokuman StajOS'un teknik mimari kaynagidir. Aktif proje kurallari yalniz `docs/kurallar.md`, durum ve kanitlar `reports/ana_durum.md` icindedir.
 
 ---
 
@@ -286,7 +286,7 @@ def get_today_log(user_id: str) -> dict:
 
 ## 9. MVP GELİŞTİRME PLANI
 
-### Faz 1: Temel Altyapı
+### Faz 1: Temel Altyapi - Tamamlandi
 1.  Proje klasör yapısının kurulması (Application Factory).
 2.  Config yönetimi (.env, SQLite ayarı).
 3.  Database bağlantısı ve User modeli.
@@ -304,12 +304,13 @@ def get_today_log(user_id: str) -> dict:
 2.  Log oluştururken otomatik ilişkilendirme mantığı — `POST /logs` `technologies/tags/topics` auto-link (`get_or_create` + `normalized_name`, `usage_count` increment) — `app/services/log_service.py:29`, `topic_service.py:109`, `technology_service.py:20`, `tag_service.py:20`
 3.  Topic ağaç yapısı endpointleri — `POST /api/v1/topics`, `GET /api/v1/topics/tree`, `GET /api/v1/topics/<id>/progress` + `GET /logs?tech=&tag=` filter — `app/api/v1/learning_routes.py:13` + `app/__init__.py:55`
 
-### Faz 4: Arama, Filtreleme ve Timeline
-1.  Çoklu parametre destekleyen arama endpointi.
-2.  Takvim/Timeline GET endpointi.
-3.  Dashboard istatistik endpointleri.
+### Faz 4: Arama, Filtreleme ve Timeline - Tamamlandi (2026-09-14)
+1.  Log arama, filtreleme ve siralama endpointi tamamlandi.
+2.  Takvim/Timeline GET endpointi tamamlandi.
+3.  Dashboard istatistik endpointleri tamamlandi.
+4.  Review/fix ve final dogrulama commit `cd99529` ile kapatildi; kanit `reports/ana_durum.md` icindedir.
 
-### Faz 5: AI Entegrasyonu (Hafifletilmiş)
+### Faz 5: AI Entegrasyonu (Hafifletilmis) - Siradaki
 1.  `AIProviderInterface` soyut sınıfı.
 2.  OpenAI/LLM implementasyonu.
 3.  `threading.Thread` ile asenkron AI çağrısı.
@@ -322,9 +323,6 @@ def get_today_log(user_id: str) -> dict:
 
 ---
 
-## 10. KRİTİK UYARILAR
+## 10. UYGULAMA NOTLARI
 
-1.  **Circular Imports:** Modeller, Servisler ve Route'lar birbirini import ederken hata oluşur. `extensions.py` kullanılmalı.
-2.  **N+1 Sorgu Problemi:** SQLAlchemy'de `joinedload` veya `selectinload` kullanılmalı.
-3.  **Tarih/Saat Zaman Dilimleri:** Tarihler veritabanında UTC saklanmalı.
-4.  **AI Hallucination:** AI servisi yanıt veremezse thread sessizce çökebilir. `try-except` ile hatalar yakalanmalı ve `ai_status = ERROR` yapılmalıdır. Ham veri etkilenmemelidir.
+Kalici uygulama ve guvenlik invariants'lari `docs/kurallar.md` icindedir. Faz 5 AI akisinin teknik beklentileri 6.3 ve 7.2 bolumlerinde tanimlanmistir.

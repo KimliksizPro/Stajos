@@ -216,6 +216,6 @@ Expected: `import-ok`.
 
 Re-read every owned file. Search the two documents and changed code for `TBD|TODO|implement later`. Confirm exact auth keys, no `password_hash`, only nullable helper conversions, unchanged mandatory timeline `.isoformat()` calls, exactly three contextual warnings, unchanged fallback continuation, no P1 empty-user fix, and no edits outside OWNS.
 
-Run: `rg -n "TBD|TODO|implement later|password_hash|iso_or_none|Failed to configure eager loading" docs/superpowers/specs/2026-09-14-fix3-structure-design.md docs/superpowers/plans/2026-09-14-fix3-structure.md app tests/test_fix3_structure.py`
+Run: `rg -n "TBD|TODO|implement later|password_hash|iso_or_none|Failed to configure eager loading" docs/archive/faz4/specs/2026-09-14-fix3-structure-design.md docs/archive/faz4/plans/2026-09-14-fix3-structure.md app tests/test_fix3_structure.py`
 
 Expected: no placeholder hits; `password_hash` only in model/auth security and explicit exclusion tests; helper and warning hits match this plan.

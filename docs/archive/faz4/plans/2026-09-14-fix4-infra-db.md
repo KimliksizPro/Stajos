@@ -185,8 +185,8 @@ Expected: exit code 0. Do not delete or modify `stajos_dev.db`, `.env`, or any p
 **Files:**
 - Verify: `app/models/topic.py`
 - Verify: `tests/test_fix4_infra_db.py`
-- Re-read: `docs/superpowers/specs/2026-09-14-fix4-infra-db-design.md`
-- Re-read: `docs/superpowers/plans/2026-09-14-fix4-infra-db.md`
+- Re-read: `docs/archive/faz4/specs/2026-09-14-fix4-infra-db-design.md`
+- Re-read: `docs/archive/faz4/plans/2026-09-14-fix4-infra-db.md`
 
 **Interfaces:**
 - Consumes: completed Fix-4 implementation and migration evidence.
@@ -218,7 +218,7 @@ Expected: the model has `default=False` and `server_default=db.text("0")`; head 
 
 Re-read both documents, `app/models/topic.py`, and `tests/test_fix4_infra_db.py`. Confirm there are no placeholders or contradictory commands; production scope is exactly one model edit; no migration or CHECK constraint was introduced; the P1 stats bug is untouched; every database lifecycle command uses the disposable `%TEMP%` SQLite URL; downgrade is limited to it; and PostgreSQL is reported unverified without a disposable PostgreSQL environment.
 
-Run: `rg -n "TB[D]|TO[D]O|implement lat[e]r|fill in detail[s]" docs/superpowers/specs/2026-09-14-fix4-infra-db-design.md docs/superpowers/plans/2026-09-14-fix4-infra-db.md`
+Run: `rg -n "TB[D]|TO[D]O|implement lat[e]r|fill in detail[s]" docs/archive/faz4/specs/2026-09-14-fix4-infra-db-design.md docs/archive/faz4/plans/2026-09-14-fix4-infra-db.md`
 
 Expected: no matches. The split regex spellings prevent this command from matching itself.
 
