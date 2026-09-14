@@ -49,6 +49,7 @@ class LogService:
         technologies: Optional[List[str]] = None,
         tags: Optional[List[str]] = None,
         topics: Optional[List] = None,
+        ai_executor=None,
     ) -> DailyLog:
         """Create a new daily log with ownership, day_number and duration logic.
 
@@ -215,6 +216,23 @@ class LogService:
         # except Exception:
         #     # Do not fail request if thread spawn fails; log error and set ai_status=ERROR inside thread
         #     pass
+
+        # Faz5 Task 5: submit only after successful commit. Submission failure
+        # logs a warning and leaves ai_status=PENDING for startup recovery.
+        executor = ai_executor
+        if executor is None:
+            try:
+                from flask import current_app, has_app_context
+
+                if has_app_context() and current_app:
+                    executor = current_app.extensions.get("ai_executor")
+            except Exception:
+                executor = None
+        if executor is not None:
+            try:
+                executor.submit(log.id)
+            except Exception:
+                logger.warning("AI submission failed for log %s", log.id)
 
         return log
 

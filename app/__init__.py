@@ -29,6 +29,15 @@ def create_app(config_name: str = None):
     migrate.init_app(app, db)
     jwt.init_app(app)
 
+    # AI wiring (Faz 5 Task 5): disabled -> no client/executor/extensions.
+    # Recovery is NOT auto-run here; call start_ai_recovery explicitly from
+    # the real startup path after migrations (never during tests/CLI migrate).
+    from app.ai.factory import create_ai_executor, create_ai_provider
+
+    _ai_provider = create_ai_provider(app.config)
+    if _ai_provider is not None:
+        create_ai_executor(app, _ai_provider)
+
     # JWT error handlers -> standardized response format
     @jwt.unauthorized_loader
     def handle_missing_token(reason):
