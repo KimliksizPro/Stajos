@@ -27,7 +27,7 @@ class TechnologyService:
         return normalize_name(name)
 
     @staticmethod
-    def get_or_create(name: str) -> Technology:
+    def get_or_create(name: str, *, commit: bool = True) -> Technology:
         """Get existing technology by normalized_name or create new.
 
         Global unique via normalized_name. Handles race via IntegrityError.
@@ -56,6 +56,11 @@ class TechnologyService:
 
         tech = Technology(name=stripped, normalized_name=normalized)
         db.session.add(tech)
+        if not commit:
+            # Atomic caller owns the transaction (Faz5 accept-ai): flush only,
+            # errors propagate to the caller's rollback boundary.
+            db.session.flush()
+            return tech
         try:
             db.session.commit()
         except IntegrityError as e:

@@ -446,3 +446,158 @@ class LogService:
         if not log:
             raise NotFoundError("Bu tarih için günlük bulunamadı")
         return log
+
+    @staticmethod
+    def _owner_scoped_log(user_id: str, log_id: str) -> DailyLog:
+        """Fetch log with internship ownership (foreign log is 404, never 403)."""
+        if not user_id or not log_id:
+            raise BadRequestError("user_id ve log_id zorunludur")
+
+        log = DailyLog.query.filter_by(id=log_id).first()
+        if not log:
+            raise NotFoundError("Günlük bulunamadı")
+
+        internship = Internship.query.filter_by(id=log.internship_id, user_id=user_id).first()
+        if not internship:
+            raise NotFoundError("Günlük bulunamadı")
+
+        return log
+
+    @staticmethod
+    def _suggestion_name(item) -> str:
+        """Extract a clean name from an AI suggestion entry (str or dict)."""
+        if item is None:
+            return ""
+        if isinstance(item, dict):
+            item = item.get("name") or item.get("title") or ""
+        return str(item).strip()
+
+    @staticmethod
+    def accept_ai(user_id: str, log_id: str) -> DailyLog:
+        """Accept a REFINED AI result atomically (Faz5 Task 6).
+
+        Links suggested technologies/tags via case-insensitive get-or-create,
+        matches suggested topics only to the owner's existing root topics
+        (parent_id IS NULL, never created). New topic links are AI-suggested
+        with usage increment; existing manual links stay manual. raw_content
+        and ai_refined_content are never written. Any DB error rolls back
+        everything.
+
+        Raises:
+            BadRequestError: Missing ids.
+            NotFoundError: Log not found / not owned (404, no 403 leak).
+            ConflictError: Status is not REFINED (409), incl. repeated accept.
+        """
+        from app.models.tag import log_tags
+        from app.models.technology import log_technologies
+        from app.models.topic import Topic, log_topics
+        from app.utils.validators import normalize_name
+
+        log = LogService._owner_scoped_log(user_id, log_id)
+        if log.ai_status != AIStatus.REFINED:
+            raise ConflictError("Yalnızca REFINED günlükler kabul edilebilir")
+
+        tech_names = list(log.ai_suggested_technologies or [])
+        tag_names = list(log.ai_suggested_tags or [])
+        topic_names = list(log.ai_suggested_topics or [])
+
+        try:
+            for raw_item in tech_names:
+                name = LogService._suggestion_name(raw_item)
+                if not name:
+                    continue
+                tech = TechnologyService.get_or_create(name, commit=False)
+                exists = db.session.execute(
+                    db.select(log_technologies).where(
+                        (log_technologies.c.log_id == log.id)
+                        & (log_technologies.c.technology_id == tech.id)
+                    )
+                ).first()
+                if exists:
+                    continue
+                db.session.execute(
+                    log_technologies.insert().values(log_id=log.id, technology_id=tech.id)
+                )
+                db.session.flush()
+
+            for raw_item in tag_names:
+                name = LogService._suggestion_name(raw_item)
+                if not name:
+                    continue
+                tag = TagService.get_or_create(user_id, name, commit=False)
+                exists = db.session.execute(
+                    db.select(log_tags).where(
+                        (log_tags.c.log_id == log.id) & (log_tags.c.tag_id == tag.id)
+                    )
+                ).first()
+                if exists:
+                    continue
+                db.session.execute(log_tags.insert().values(log_id=log.id, tag_id=tag.id))
+                db.session.flush()
+
+            for raw_item in topic_names:
+                name = LogService._suggestion_name(raw_item)
+                if not name:
+                    continue
+                normalized = normalize_name(name)
+                if not normalized:
+                    continue
+                topic = (
+                    Topic.query.filter_by(user_id=user_id, normalized_name=normalized)
+                    .filter(Topic.parent_id.is_(None))
+                    .first()
+                )
+                if not topic:
+                    continue  # never create topics on accept
+                exists = db.session.execute(
+                    db.select(log_topics).where(
+                        (log_topics.c.log_id == log.id)
+                        & (log_topics.c.topic_id == topic.id)
+                    )
+                ).first()
+                if exists:
+                    continue  # manual stays manual, no double usage increment
+                TopicService.link_to_log(
+                    user_id, log.id, topic.id, is_ai_suggested=True, commit=False
+                )
+                TopicService.increment_usage(user_id, topic.id, commit=False)
+
+            log.ai_status = AIStatus.ACCEPTED
+            db.session.commit()
+        except (BadRequestError, NotFoundError, ConflictError):
+            db.session.rollback()
+            raise
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.warning("AI accept conflict for log %s: %s", log.id, e)
+            raise ConflictError("Kabul işlemi çakışma nedeniyle tamamlanamadı")
+        except Exception:
+            db.session.rollback()
+            raise
+
+        return log
+
+    @staticmethod
+    def reject_ai(user_id: str, log_id: str) -> DailyLog:
+        """Reject a REFINED AI result (Faz5 Task 6).
+
+        Only flips status to REJECTED; relations and suggestions preserved.
+
+        Raises:
+            BadRequestError: Missing ids.
+            NotFoundError: Log not found / not owned (404, no 403 leak).
+            ConflictError: Status is not REFINED (409), incl. repeated reject.
+        """
+        log = LogService._owner_scoped_log(user_id, log_id)
+        if log.ai_status != AIStatus.REFINED:
+            raise ConflictError("Yalnızca REFINED günlükler reddedilebilir")
+
+        log.ai_status = AIStatus.REJECTED
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.warning("AI reject conflict for log %s: %s", log.id, e)
+            raise ConflictError("Ret işlemi çakışma nedeniyle tamamlanamadı")
+
+        return log

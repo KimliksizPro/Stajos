@@ -96,3 +96,19 @@ def get_log(log_id: str):
     user_id = get_jwt_identity()
     log = LogService.get_log_by_id(user_id=user_id, log_id=log_id)
     return success_response(data=log.to_dict(), status=200)
+
+
+@log_bp.route("/<string:log_id>/accept-ai", methods=["PUT"], strict_slashes=False)
+@jwt_required()
+def accept_ai(log_id: str):
+    user_id = get_jwt_identity()
+    log = LogService.accept_ai(user_id=user_id, log_id=log_id)
+    return success_response(data=log.to_dict(), status=200)
+
+
+@log_bp.route("/<string:log_id>/reject-ai", methods=["PUT"], strict_slashes=False)
+@jwt_required()
+def reject_ai(log_id: str):
+    user_id = get_jwt_identity()
+    log = LogService.reject_ai(user_id=user_id, log_id=log_id)
+    return success_response(data=log.to_dict(), status=200)

@@ -27,7 +27,7 @@ class TagService:
         return normalize_name(name)
 
     @staticmethod
-    def get_or_create(user_id: str, name: str) -> Tag:
+    def get_or_create(user_id: str, name: str, *, commit: bool = True) -> Tag:
         """Get existing tag by user_id+normalized_name or create new.
 
         Args:
@@ -59,6 +59,11 @@ class TagService:
 
         tag = Tag(user_id=user_id, name=stripped, normalized_name=normalized)
         db.session.add(tag)
+        if not commit:
+            # Atomic caller owns the transaction (Faz5 accept-ai): flush only,
+            # errors propagate to the caller's rollback boundary.
+            db.session.flush()
+            return tag
         try:
             db.session.commit()
         except IntegrityError as e:
