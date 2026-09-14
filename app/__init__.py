@@ -63,12 +63,14 @@ def create_app(config_name: str = None):
     from app.api.v1.internship_routes import internship_bp
     from app.api.v1.log_routes import log_bp
     from app.api.v1.learning_routes import learning_bp
+    from app.api.v1.export_routes import export_bp
     from app.api.v1.timeline_routes import timeline_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(internship_bp)
     app.register_blueprint(log_bp)
     app.register_blueprint(learning_bp)
+    app.register_blueprint(export_bp)
     app.register_blueprint(timeline_bp)
 
     # Health check
