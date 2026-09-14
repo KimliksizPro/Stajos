@@ -331,3 +331,34 @@ def test_reject_ai_repeated_reject_is_409(app):
     LogService.reject_ai(user.id, log.id)
     with pytest.raises(ConflictError):
         LogService.reject_ai(user.id, log.id)
+
+
+def test_reject_ai_rolls_back_on_unexpected_commit_error(app, monkeypatch):
+    user, internship = _make_user_internship()
+    log = _make_refined_log(user, internship)
+    log_id = log.id
+
+    rollback_calls = []
+    real_rollback = db.session.rollback
+
+    def _spy_rollback():
+        rollback_calls.append(1)
+        return real_rollback()
+
+    def _boom_commit():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(db.session, "commit", _boom_commit)
+    monkeypatch.setattr(db.session, "rollback", _spy_rollback)
+
+    with pytest.raises(RuntimeError):
+        LogService.reject_ai(user.id, log_id)
+
+    assert len(rollback_calls) == 1
+    # session clean: usable for new queries/writes after rollback
+    db.session.expire_all()
+    fresh = db.session.get(DailyLog, log_id)
+    assert fresh.ai_status == AIStatus.REFINED
+    assert db.session.execute(
+        db.select(DailyLog).where(DailyLog.id == log_id)
+    ).scalar_one_or_none() is not None

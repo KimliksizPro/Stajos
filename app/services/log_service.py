@@ -599,5 +599,8 @@ class LogService:
             db.session.rollback()
             logger.warning("AI reject conflict for log %s: %s", log.id, e)
             raise ConflictError("Ret işlemi çakışma nedeniyle tamamlanamadı")
+        except Exception:
+            db.session.rollback()
+            raise
 
         return log
