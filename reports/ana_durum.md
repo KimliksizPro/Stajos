@@ -2,16 +2,15 @@
 
 ## Decision
 
-- Faz 4 tamamlandi ve commit `cd99529` ile kapatildi.
-- Siradaki gercek gelistirme Faz 5 AI'dir; roadmap `backlog.md` ve `architecture.md` ile uyumludur.
+- Faz 5 AI tamamlandi (2026-09-14, HEAD `3f77e89`, aralik `5e50db1..3f77e89`); siradaki gercek gelistirme Faz 6'dir; roadmap `backlog.md` ve `architecture.md` ile uyumludur.
 - Bu dosya tek aktif durum, kanit, root-cause dersi ve risk ledger'idir.
 
 ## Evidence
 
-- Son tam suite: `python -m pytest -v` sonucu 19 passed.
-- Son manuel API kontrolu: 13/13 PASS; log filtre/siralama, timeline, stats, 401, IDOR ve response envelope kapsandi.
-- Disposable SQLite DB'de `upgrade`, `current` ve `check` PASS; cleanup tamamlandi.
-- `py_compile`, `compileall` ve import smoke PASS.
+- Son tam suite (2026-09-14): `python -m pytest -v` sonucu 139 passed; `python -m pytest tests/ai -v` sonucu 120 passed.
+- Migration head `f5a13c9d7e21`; disposable SQLite DB'de `flask db upgrade`, `flask db current` (`f5a13c9d7e21 (head)`) ve `flask db check` (`No new upgrade operations detected`) PASS; cleanup tamamlandi.
+- `python -m compileall app tests config.py run.py` exit 0; `git diff --check` clean; `git status --short` clean (task-7 raporu haric commit disi).
+- Faz 5 commit araligi `5e50db1..3f77e89` (11 commit).
 - Tamamlanan Fix-2/3/4 plan ve tasarim kayitlari `docs/archive/faz4/` altindadir.
 
 ## Root-Cause Lessons
@@ -23,6 +22,6 @@
 
 ## Risks/Unknowns
 
-- PostgreSQL dogrulanmadi; migration kaniti SQLite ile sinirlidir.
-- Faz 5 background thread yaklasimi process restart, hata gozlemlenebilirligi ve uygulama context'i acisindan tasarim karari gerektirir.
+- PostgreSQL runtime yok (`psql` bulunamadi); migration kaniti SQLite ile sinirlidir.
+- Restart-sirasinda-calisan-is kaybi recovery ile sinirli: `PROCESSING` kalanlar startup/recovery taramasinda `PENDING`'e alinip yeniden kuyruga verilir.
 - Bilincli ertelenen hardening ve urun davranislari `docs/kurallar.md` ile `backlog.md` icinde acikca sinirlidir.

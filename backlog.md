@@ -9,8 +9,10 @@
 - Faz 4 commit'i `cd99529` (`feat: complete phase 4 review and fixes`) olarak tamamlandi.
 - Tarihli dogrulama kaniti ve kalan riskler: `reports/ana_durum.md`.
 - Tamamlanan Fix-2/3/4 tasarim ve planlari: `docs/archive/faz4/`.
+- Faz 5: AI entegrasyonu tamamlandi (2026-09-14): provider/parser/worker/recovery/submission/accept-reject + migration `f5a13c9d7e21` head.
+- Faz 5 kanit (2026-09-14): `tests/ai` 120 passed, tam suite 139 passed; disposable SQLite DB'de `upgrade/current/check` PASS; commit araligi `5e50db1..3f77e89` (HEAD `3f77e89`).
 
-## Siradaki: Faz 5 AI
+## Siradaki: Faz 5 AI (tamamlandi 2026-09-14)
 
 - `AIProviderInterface` ve provider implementasyonu.
 - AI cagrisi icin hafif background calisma modeli.

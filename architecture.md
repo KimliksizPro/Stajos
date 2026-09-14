@@ -310,11 +310,13 @@ def get_today_log(user_id: str) -> dict:
 3.  Dashboard istatistik endpointleri tamamlandi.
 4.  Review/fix ve final dogrulama commit `cd99529` ile kapatildi; kanit `reports/ana_durum.md` icindedir.
 
-### Faz 5: AI Entegrasyonu (Hafifletilmis) - Siradaki
+### Faz 5: AI Entegrasyonu (Hafifletilmis) ✅ Tamamlandı (2026-09-14)
 1.  `AIProviderInterface` soyut sınıfı.
 2.  OpenAI/LLM implementasyonu.
 3.  `threading.Thread` ile asenkron AI çağrısı.
 4.  Accept/Reject AI mekanizması.
+5.  Kanit (2026-09-14): `tests/ai` 120 passed, tam suite 139 passed; migration head `f5a13c9d7e21`; commit araligi `5e50db1..3f77e89` (HEAD `3f77e89`); disposable SQLite DB'de `upgrade/current/check` PASS, cleanup tamamlandi.
+6.  Kalan riskler: PostgreSQL runtime yok (kanit SQLite ile sinirli); restart-sirasinda-calisan-is kaybi recovery ile sinirli.
 
 ### Faz 6: Export ve Son Rötuşlar
 1.  JSON ve CSV export endpointleri.
