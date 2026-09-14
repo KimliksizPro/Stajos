@@ -10,7 +10,7 @@
 - Tarihli dogrulama kaniti ve kalan riskler: `reports/ana_durum.md`.
 - Tamamlanan Fix-2/3/4 tasarim ve planlari: `docs/archive/faz4/`.
 - Faz 5: AI entegrasyonu tamamlandi (2026-09-14): provider/parser/worker/recovery/submission/accept-reject + migration `f5a13c9d7e21` head.
-- Faz 5 kanit (2026-09-14): `tests/ai` 120 passed, tam suite 139 passed; disposable SQLite DB'de `upgrade/current/check` PASS; commit araligi `5e50db1..3f77e89` (HEAD `3f77e89`).
+- Faz 5 kanit (2026-09-14): `tests/ai` 128 passed, tam suite 147 passed; disposable SQLite DB'de `upgrade/current/check` PASS; commit araligi `5e50db1..5e29bc3` (HEAD `5e29bc3`).
 
 ## Siradaki: Faz 5 AI (tamamlandi 2026-09-14)
 
