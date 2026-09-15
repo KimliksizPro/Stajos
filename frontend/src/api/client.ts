@@ -6,7 +6,7 @@ const client = axios.create({
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('stajos_token');
-  if (token && config.headers) {
+  if (token && token !== 'undefined' && token !== 'null' && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -17,7 +17,9 @@ client.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('stajos_token');
-      window.location.href = '/login';
+      if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

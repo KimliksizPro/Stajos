@@ -22,8 +22,9 @@ export function RegisterPage() {
       await register(email, password, fullName);
       addToast('success', 'Kayıt başarılı. Lütfen giriş yapın.');
       navigate('/login');
-    } catch (error) {
-      addToast('error', 'Kayıt olurken bir hata oluştu.');
+    } catch (error: any) {
+      const msg = error?.response?.data?.errors?.[0] || 'Kayıt olurken bir hata oluştu.';
+      addToast('error', msg);
     } finally {
       setLoading(false);
     }

@@ -16,23 +16,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('stajos_token'));
+  const [token, setToken] = useState<string | null>(() => {
+    const t = localStorage.getItem('stajos_token');
+    return t && t !== 'undefined' && t !== 'null' ? t : null;
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (token) {
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    };
-    initializeAuth();
+    setLoading(false);
   }, [token]);
 
   const login = async (email: string, password: string) => {
     const res = await authApi.login(email, password);
-    if (res.success && res.data) {
+    if (res.success && res.data?.access_token) {
       const newToken = res.data.access_token;
       setToken(newToken);
       localStorage.setItem('stajos_token', newToken);
@@ -45,9 +41,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (email: string, password: string, full_name: string) => {
     const res = await authApi.register(email, password, full_name);
     if (res.success && res.data) {
-      const newToken = res.data.access_token;
-      setToken(newToken);
-      localStorage.setItem('stajos_token', newToken);
+      if (res.data.access_token) {
+        const newToken = res.data.access_token;
+        setToken(newToken);
+        localStorage.setItem('stajos_token', newToken);
+      }
       if (res.data.user) {
         setUser(res.data.user);
       }

@@ -21,8 +21,9 @@ export function LoginPage() {
       await login(email, password);
       addToast('success', 'Başarıyla giriş yapıldı');
       navigate('/');
-    } catch (error) {
-      addToast('error', 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+    } catch (error: any) {
+      const msg = error?.response?.data?.errors?.[0] || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+      addToast('error', msg);
     } finally {
       setLoading(false);
     }
