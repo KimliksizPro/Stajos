@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { GraduationCap, LayoutDashboard, BookOpen, Calendar, Lightbulb, LogOut, Menu, X } from 'lucide-react';
-// import { useAuth } from '@/contexts/AuthContext'; // To be implemented later
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  // const { user, logout } = useAuth();
-  const user = { email: 'user@example.com' }; // Placeholder
-  const logout = () => console.log('logout'); // Placeholder
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -72,15 +71,21 @@ export const Sidebar: React.FC = () => {
 
         <div className="p-4 border-t border-border mt-auto">
           <div className="flex flex-col gap-3">
-            <div className="px-3 text-sm text-text-secondary truncate">
-              {user?.email}
+            <div className="px-3">
+              <p className="text-sm font-semibold text-text-primary truncate">
+                {user?.full_name || 'Kullanıcı'}
+              </p>
+              <p className="text-xs text-text-muted truncate">
+                {user?.email || ''}
+              </p>
             </div>
             <button
               onClick={() => {
                 logout();
                 closeSidebar();
+                navigate('/login');
               }}
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-error hover:bg-error-light/50 rounded-md transition-colors w-full"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-error hover:bg-error-light/50 rounded-md transition-colors w-full cursor-pointer"
             >
               <LogOut className="h-5 w-5" />
               Çıkış Yap
