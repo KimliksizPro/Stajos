@@ -9,6 +9,24 @@ import { useToast } from '../components/ui/Toast';
 import client from '../api/client';
 import type { DailyLog, Internship } from '../types';
 
+function calculateBusinessDays(startDateStr: string, endDateStr: string): number {
+  if (!startDateStr || !endDateStr) return 0;
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  if (start > end) return 0;
+
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    const day = cur.getDay();
+    if (day !== 0 && day !== 6) {
+      count++;
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+}
+
 export function DashboardPage() {
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -136,27 +154,85 @@ export function DashboardPage() {
                 type="date"
                 label="Başlangıç Tarihi"
                 value={internshipForm.start_date}
-                onChange={(e) => setInternshipForm({ ...internshipForm, start_date: e.target.value })}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  setInternshipForm((prev) => {
+                    const days = calculateBusinessDays(newStart, prev.end_date);
+                    return {
+                      ...prev,
+                      start_date: newStart,
+                      total_expected_days: days > 0 ? String(days) : prev.total_expected_days,
+                    };
+                  });
+                }}
                 required
               />
               <Input
                 type="date"
                 label="Bitiş Tarihi"
                 value={internshipForm.end_date}
-                onChange={(e) => setInternshipForm({ ...internshipForm, end_date: e.target.value })}
+                onChange={(e) => {
+                  const newEnd = e.target.value;
+                  setInternshipForm((prev) => {
+                    const days = calculateBusinessDays(prev.start_date, newEnd);
+                    return {
+                      ...prev,
+                      end_date: newEnd,
+                      total_expected_days: days > 0 ? String(days) : prev.total_expected_days,
+                    };
+                  });
+                }}
                 required
               />
             </div>
 
-            <Input
-              type="number"
-              label="Toplam Beklenen İş Günü"
-              placeholder="20"
-              min={1}
-              value={internshipForm.total_expected_days}
-              onChange={(e) => setInternshipForm({ ...internshipForm, total_expected_days: e.target.value })}
-              required
-            />
+            <div className="space-y-2">
+              <Input
+                type="number"
+                label="Toplam Beklenen Gün (Hedef)"
+                placeholder="Örn: 75 veya 150"
+                min={1}
+                value={internshipForm.total_expected_days}
+                onChange={(e) => setInternshipForm({ ...internshipForm, total_expected_days: e.target.value })}
+                required
+              />
+              <p className="text-xs text-text-secondary">
+                💡 <strong>İş günü nedir?</strong> Hafta sonları hariç staja fiilen gittiğin gün sayısıdır.
+                Tüm okul yılı boyunca haftada 3 gün gidiyorsan yaklaşık <strong>100 gün</strong>, haftada 5 gün gidiyorsan yaklaşık <strong>160-180 gün</strong> yazabilirsin.
+              </p>
+              
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="text-xs text-text-muted self-center">Hızlı Seçim:</span>
+                <button
+                  type="button"
+                  onClick={() => setInternshipForm({ ...internshipForm, total_expected_days: '20' })}
+                  className="px-2.5 py-1 text-xs rounded-full bg-bg-primary border border-border hover:border-accent hover:text-accent transition-colors cursor-pointer"
+                >
+                  Yaz Stajı (20 Gün)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInternshipForm({ ...internshipForm, total_expected_days: '40' })}
+                  className="px-2.5 py-1 text-xs rounded-full bg-bg-primary border border-border hover:border-accent hover:text-accent transition-colors cursor-pointer"
+                >
+                  40 Günlük Staj
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInternshipForm({ ...internshipForm, total_expected_days: '75' })}
+                  className="px-2.5 py-1 text-xs rounded-full bg-bg-primary border border-border hover:border-accent hover:text-accent transition-colors cursor-pointer"
+                >
+                  1 Dönem (~75 Gün)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInternshipForm({ ...internshipForm, total_expected_days: '150' })}
+                  className="px-2.5 py-1 text-xs rounded-full bg-bg-primary border border-border hover:border-accent hover:text-accent transition-colors cursor-pointer"
+                >
+                  Tüm Okul Yılı (~150 Gün)
+                </button>
+              </div>
+            </div>
 
             <div className="pt-3">
               <Button type="submit" className="w-full" loading={creatingInternship}>
