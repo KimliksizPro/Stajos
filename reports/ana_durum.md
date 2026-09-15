@@ -32,3 +32,24 @@
 - Restart-sirasinda-calisan-is kaybi recovery ile sinirli: `PROCESSING` kalanlar startup/recovery taramasinda `PENDING`'e alinip yeniden kuyruga verilir.
 - Bilincli ertelenen hardening ve urun davranislari `docs/kurallar.md` ile `backlog.md` icinde acikca sinirlidir.
 - Faz 6 review Minor takipleri acik (merge-blocker degil): CSV formula injection sanitize, Excel BOM/charset, OpenAPI spec-drift guard testi, Swagger CDN SRI/vendoring (`docs_routes.py`).
+
+## 2026-09-15 — Frontend tasarim (Stitch sirali uretim, worktree)
+
+### Decision
+
+- Once tasarim, ayri worktree, API sonra; tam set; sirali uretim (kullanici onayli).
+- Spec: `.worktrees/frontend-tasarim/docs/superpowers/specs/2026-09-15-frontend-tasarim-design.md` (branch `feat/frontend-tasarim`, untracked, commitsiz).
+- Uretim 1 (Login+Register) Stitch'te uretildi ve kabul edildi: `screens/283e34769c48443aa41d1360c2d6a7ed` ("Staj Defteri - Giris ve Kayit"). NOT: deviceType DESKTOP dondu, spec MOBILE idi.
+- Uretim 2 (Onboarding/Staj Olusturma) 3x timeout (MCP -32001) ile BLOCKED; ayni yaklasim zorlanmayacak.
+
+### Evidence
+
+- `stitch_get_project`: "Staj Defterim Uygulamasi" (projects/13553517985943119988); 4 mevcut ekran donduruldu; design system `assets/fac1cd78c1c746f39bba64dea445807c` (Atelier Journal).
+- `stitch_get_screen` 283e... ile Uretim 1 basligi dogrulandi; `stitch_list_screens` uretilen ekrani listelemiyor (get ile erisiliyor).
+- Worktree `.worktrees/frontend-tasarim` @ `454a305`; `git status` tek untracked spec; placeholder (TBD/TODO) taramasi temiz; `git diff --check` clean.
+
+### Risks/Unknowns
+
+- Stitch generate servisi yavas/zaman asimli (Uretim 2, 3 deneme: 2 + kullanici istekli 1 retry).
+- Uretim 1 DESKTOP dondu; mobil uyum Stitch onizlemede dogrulanmali.
+- Spec R1-R5 gecerli: staj liste endpointi yok, AI polling araligi tanimsiz, CSV mobil indirme belirsiz, PG kaniti yok, Login+Register bolunme riski.
